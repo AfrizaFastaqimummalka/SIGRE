@@ -1,0 +1,24 @@
+PERBAIKAN LOGIN GIS BATAM
+
+Akar masalah:
+1. Form menampilkan Username, tetapi frontend mengirim field email.
+2. Backend hanya mencari kolom email, padahal proyek lama menerima nama_lengkap atau email.
+3. views.py mengimpor status sebagai drf_status, tetapi login_admin memakai status.HTTP_*. Saat login gagal divalidasi, terjadi NameError dan berubah menjadi HTTP 500.
+4. Endpoint login terdaftar ganda di config/urls.py.
+5. requirements.txt belum menyimpan dependensi Python bcrypt.
+6. Callback JWT NextAuth mencoba refresh token walaupun sesi belum memiliki token.
+
+Cara memasang patch:
+1. Tutup server Next.js dan Django.
+2. Salin folder app dan backend dari ZIP ini ke root proyek. Pilih Replace/Overwrite.
+3. Aktifkan virtual environment backend.
+4. Jalankan: python -m pip install -r requirements.txt
+5. Jalankan: python manage.py check
+6. Jalankan: python manage.py migrate
+7. Jalankan: python manage.py runserver
+8. Pada terminal lain, jalankan: pnpm dev
+9. Login dapat memakai nama_lengkap/username atau email.
+
+Catatan:
+- Backend diasumsikan berjalan di http://127.0.0.1:8000.
+- Untuk URL lain, tambahkan DJANGO_API_URL atau NEXT_PUBLIC_API_URL pada .env.local.

@@ -1,0 +1,183 @@
+/* ═══════════════════════════════════════════════════════════
+   Infografis Laporan Masyarakat (Corporate Light Theme)
+   ═══════════════════════════════════════════════════════════ */
+
+.igl-page {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  padding: 24px;
+  color: #334155;
+}
+
+.igl-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ── Header ── */
+.igl-header {
+  text-align: center;
+  margin-bottom: 40px;
+  margin-top: 16px;
+}
+
+.igl-header h1 {
+  font-size: 32px;
+  font-weight: 800;
+  color: #1e3a8a; /* BP Batam blue */
+  margin: 0 0 12px;
+  letter-spacing: -0.5px;
+}
+
+.igl-header p {
+  font-size: 15px;
+  color: #64748b;
+  margin: 0;
+}
+
+.igl-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #2563eb;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  transition: color 0.2s;
+  background: #ffffff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.igl-back-link:hover {
+  color: #1d4ed8;
+  background: #f1f5f9;
+}
+
+.igl-back-link svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+/* ── Summary cards ── */
+.igl-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.igl-summary-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px 20px;
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.igl-summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.05);
+}
+
+.igl-summary-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.igl-summary-value {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.igl-summary-card:nth-child(1) .igl-summary-value { color: #1e3a8a; } /* Total */
+.igl-summary-card:nth-child(2) .igl-summary-value { color: #f59e0b; } /* Pending */
+.igl-summary-card:nth-child(3) .igl-summary-value { color: #3b82f6; } /* Diproses */
+.igl-summary-card:nth-child(4) .igl-summary-value { color: #16a34a; } /* Selesai */
+
+/* ── Chart cards ── */
+.igl-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.igl-chart-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+.igl-chart-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 20px;
+}
+
+.igl-chart-container {
+  width: 100%;
+  height: 300px;
+}
+
+/* ── Full width chart ── */
+.igl-chart-full {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  margin-bottom: 24px;
+}
+
+.igl-chart-full .igl-chart-container {
+  height: 340px;
+}
+
+/* ── Loading / empty ── */
+.igl-loading {
+  text-align: center;
+  padding: 80px;
+  color: #64748b;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.igl-empty-chart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #94a3b8;
+  font-size: 14px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px dashed #cbd5e1;
+}
+
+/* ── Responsive ── */
+@media (max-width: 860px) {
+  .igl-summary-grid { grid-template-columns: repeat(2, 1fr); }
+  .igl-charts-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .igl-page { padding: 16px; }
+  .igl-summary-grid { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,281 @@
+/* ═══════════════════════════════════════════════════════════
+   Landing Page Styles (Clean & Official Corporate Theme)
+   ═══════════════════════════════════════════════════════════ */
+
+.landing-page {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  color: #334155;
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Header ── */
+.landing-header {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 16px 0;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.landing-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-decoration: none;
+}
+
+.landing-logo-img {
+  height: 44px;
+  width: auto;
+  object-fit: contain;
+}
+
+.landing-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1e3a8a; /* Deep BP Batam blue */
+  line-height: 1.2;
+}
+
+.brand-subtitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.nav-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  background: #eff6ff;
+  transition: background 0.2s, color 0.2s;
+}
+
+.nav-link:hover {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+/* ── Hero Section ── */
+.landing-hero {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 80px 0;
+}
+
+.landing-hero .landing-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 16px;
+  border-radius: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.badge-dot {
+  width: 8px;
+  height: 8px;
+  background: #f59e0b;
+  border-radius: 50%;
+}
+
+.hero-title {
+  font-size: 42px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 20px;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+
+.hero-highlight {
+  color: #1e3a8a; /* Primary Corporate Blue */
+}
+
+.hero-description {
+  font-size: 16px;
+  color: #64748b;
+  max-width: 680px;
+  margin: 0 auto 48px;
+  line-height: 1.6;
+}
+
+/* ── Cards Section ── */
+.hero-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  width: 100%;
+  max-width: 1000px;
+}
+
+.action-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+.action-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.card-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.card-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+/* Color variations for icons */
+.blue-icon {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.green-icon {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.yellow-icon {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.action-card h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 12px;
+}
+
+.action-card p {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0 0 24px;
+  line-height: 1.5;
+  flex: 1;
+}
+
+/* Buttons */
+.card-btn {
+  display: inline-block;
+  width: 100%;
+  padding: 12px 0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.btn-blue {
+  background: #1e3a8a;
+  color: #ffffff;
+}
+.btn-blue:hover { background: #1e40af; }
+
+.btn-green {
+  background: #16a34a;
+  color: #ffffff;
+}
+.btn-green:hover { background: #15803d; }
+
+.btn-yellow {
+  background: #f59e0b;
+  color: #ffffff;
+}
+.btn-yellow:hover { background: #d97706; }
+
+/* ── Footer ── */
+.landing-footer {
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  padding: 24px 0;
+  text-align: center;
+}
+
+.landing-footer p {
+  margin: 0;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+/* ── Responsive ── */
+@media (max-width: 860px) {
+  .hero-cards {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+  }
+  
+  .hero-title {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-container {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
