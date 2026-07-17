@@ -72,6 +72,7 @@ DATABASES = {
 _cors_origins_env = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000')
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in _cors_origins_env.split(',') if origin.strip()]
 
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS + ['https://api.sigrebatam.site']
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
