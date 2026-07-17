@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 
-DEBUG = os.getenv('DEBUG') == 'True'
+DEBUG = True
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
 
@@ -75,6 +75,7 @@ CORS_ALLOWED_ORIGINS = [origin.strip() for origin in _cors_origins_env.split(','
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS + [
     'https://api.sigrebatam.site',
     'http://api.sigrebatam.site',
+    'https://*.sigrebatam.site',
     'https://backendsigre.up.railway.app',
     'https://sigrebatam.site',
 ]
