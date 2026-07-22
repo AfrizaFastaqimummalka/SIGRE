@@ -103,12 +103,12 @@ export default function InfografisPage() {
   const [filters, setFilters] = useState<FilterState>({
     kabupaten: '', kategori: '', status_perizinan: '',
     pelanggaran: '', status_sanksi: '',
-    tahun: new Date().getFullYear().toString(),
+    tahun: '',
   });
   const [appliedFilters, setAppliedFilters] = useState<FilterState>({
     kabupaten: '', kategori: '', status_perizinan: '',
     pelanggaran: '', status_sanksi: '',
-    tahun: new Date().getFullYear().toString(),
+    tahun: '',
   });
 
   const fetchData = useCallback(async (f: FilterState) => {
@@ -144,7 +144,7 @@ export default function InfografisPage() {
     const defaultF: FilterState = {
       kabupaten: '', kategori: '', status_perizinan: '',
       pelanggaran: '', status_sanksi: '',
-      tahun: new Date().getFullYear().toString(),
+      tahun: '',
     };
     setFilters(defaultF);
     setAppliedFilters(defaultF);
@@ -319,7 +319,7 @@ export default function InfografisPage() {
               options={opts?.status_sanksi ?? []} placeholder="Pilih Status Sanksi"
               onChange={v => setFilters(f => ({ ...f, status_sanksi: v }))} />
             <FilterSelect label="TAHUN DATA" value={filters.tahun}
-              options={opts?.tahun ?? ['2024','2025','2026']} placeholder="Pilih Tahun"
+              options={opts?.tahun ?? ['2024','2025','2026']} placeholder="Semua Tahun"
               onChange={v => setFilters(f => ({ ...f, tahun: v }))} />
           </div>
         </div>

@@ -195,7 +195,7 @@ def infografis_stats(request):
       - tahun            : filter by tanggal_pasang year (default: tahun sekarang)
     """
 
-    tahun = request.GET.get('tahun', str(timezone.now().year))
+    tahun = request.GET.get('tahun', '')
     kabupaten = request.GET.get('kabupaten', '')
     kategori_filter = request.GET.get('kategori', '')
     status_perizinan_filter = request.GET.get('status_perizinan', '')
