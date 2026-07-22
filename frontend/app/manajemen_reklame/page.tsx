@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import AppShell from "../components/AppShell";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useReactToPrint } from "react-to-print";
 
 const API_BASE = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api`;
 
@@ -55,6 +56,15 @@ const EMPTY_FILTER: FilterState = {
   status_reklame: "",
 };
 
+const FILTER_LABELS: Record<keyof FilterState, string> = {
+  kabupaten_kota: "Kabupaten/Kota",
+  pengguna: "Pengguna",
+  kuasa_pengguna: "Kuasa Pengguna",
+  tipe_zona: "Tipe Zona",
+  kategori: "Kategori",
+  status_reklame: "Status Reklame",
+};
+
 const styles: { [key: string]: React.CSSProperties } = {
   page: { background: "rgba(251, 251, 250, 1)", padding: 24, fontFamily: "sans-serif" },
   card: { background: "rgba(251, 251, 250, 1)", borderRadius: 12, padding: 20 },
@@ -63,6 +73,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   searchBox: { display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" },
   input: { padding: "10px 14px", borderRadius: 8, border: "1px solid rgb(229, 231, 235)", width: 270, outline: "none" },
   btnPrimary: { background: "#1a8fe3", color: "#fff", border: "none", borderRadius: 8, padding: "10px 16px", cursor: "pointer" },
+  btnPrimaryPDF: { background: "#1a8fe3", color: "#fff", border: "none", borderRadius: 8, padding: "10px 16px", cursor: "pointer", display: "flex", flexDirection: "row", alignItems: "center", gap: "5px" },
   btnSecondary: { background: "#fff", color: "#111827", border: "1px solid #ddd", borderRadius: 8, padding: "10px 16px", cursor: "pointer" },
   filterBox: { border: "1px solid #e5e7eb", borderRadius: 10, padding: 16, marginBottom: 20, backgroundColor: "#fff" },
   filterRow: { display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" },
@@ -85,6 +96,12 @@ const styles: { [key: string]: React.CSSProperties } = {
   activeBadge: { display: "inline-block", background: "#eff6ff", color: "#1a8fe3", border: "1px solid #bfdbfe", borderRadius: 20, padding: "2px 10px", fontSize: 12, marginRight: 6, marginTop: 8 },
 };
 
+import ReklamePrintReport, {
+  type PrintFilterItem,
+} from "../components/ReklamePrintReport";
+
+import "../styles/manajemen_reklame_print.css";
+
 export default function Page() {
   const router = useRouter();
   const [asetData, setAsetData] = useState<Aset[]>([]);
@@ -98,6 +115,11 @@ export default function Page() {
   const [checkedAll, setCheckedAll] = useState(false);
   const [page, setPage] = useState(1);
   const PER_PAGE = 5;
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const [printGeneratedAt, setPrintGeneratedAt] = useState(
+    new Date()
+  );
 
   const { data: session, status } = useSession();
   const accessToken = (session as any)?.accessToken;
@@ -125,9 +147,9 @@ export default function Page() {
     } catch (err) { console.error(err); }
   }, [accessToken]);
 
-  useEffect(() => { 
+  useEffect(() => {
     if (status === "authenticated" && accessToken) {
-      fetchData(); fetchFilterOptions(); 
+      fetchData(); fetchFilterOptions();
     }
   }, [fetchData, fetchFilterOptions, accessToken, status]);
 
@@ -137,16 +159,137 @@ export default function Page() {
   const handleCari = () => { setAppliedFilter({ ...pendingFilter }); setPage(1); setChecked({}); setCheckedAll(false); };
   const handleResetFilter = () => { setPendingFilter(EMPTY_FILTER); setAppliedFilter(EMPTY_FILTER); setPage(1); setChecked({}); setCheckedAll(false); };
 
-  const filtered = asetData.filter((aset) => {
-    const kw = searchInput.trim().toLowerCase();
-    if (kw && !(aset.nama_pemilik || "").toLowerCase().includes(kw)) return false;
-    if (appliedFilter.kabupaten_kota && (aset.kabupaten_kota || "").toLowerCase() !== appliedFilter.kabupaten_kota.toLowerCase()) return false;
-    if (appliedFilter.pengguna && (aset.pengguna || "").toLowerCase() !== appliedFilter.pengguna.toLowerCase()) return false;
-    if (appliedFilter.kuasa_pengguna && (aset.kuasa_pengguna || "").toLowerCase() !== appliedFilter.kuasa_pengguna.toLowerCase()) return false;
-    if (appliedFilter.tipe_zona && (aset.tipe_zona || "").toLowerCase() !== appliedFilter.tipe_zona.toLowerCase()) return false;
-    if (appliedFilter.kategori && (aset.nama_kategori || "").toLowerCase() !== appliedFilter.kategori.toLowerCase()) return false;
-    if (appliedFilter.status_reklame && (aset.status_reklame || "").toLowerCase() !== appliedFilter.status_reklame.toLowerCase()) return false;
-    return true;
+  const filtered = useMemo(
+    () =>
+      asetData.filter((aset) => {
+        const keyword = searchInput.trim().toLowerCase();
+
+        if (
+          keyword &&
+          !(aset.nama_pemilik || "")
+            .toLowerCase()
+            .includes(keyword)
+        ) {
+          return false;
+        }
+
+        if (
+          appliedFilter.kabupaten_kota &&
+          (aset.kabupaten_kota || "").toLowerCase() !==
+          appliedFilter.kabupaten_kota.toLowerCase()
+        ) {
+          return false;
+        }
+
+        if (
+          appliedFilter.pengguna &&
+          (aset.pengguna || "").toLowerCase() !==
+          appliedFilter.pengguna.toLowerCase()
+        ) {
+          return false;
+        }
+
+        if (
+          appliedFilter.kuasa_pengguna &&
+          (aset.kuasa_pengguna || "").toLowerCase() !==
+          appliedFilter.kuasa_pengguna.toLowerCase()
+        ) {
+          return false;
+        }
+
+        if (
+          appliedFilter.tipe_zona &&
+          (aset.tipe_zona || "").toLowerCase() !==
+          appliedFilter.tipe_zona.toLowerCase()
+        ) {
+          return false;
+        }
+
+        if (
+          appliedFilter.kategori &&
+          (aset.nama_kategori || "").toLowerCase() !==
+          appliedFilter.kategori.toLowerCase()
+        ) {
+          return false;
+        }
+
+        if (
+          appliedFilter.status_reklame &&
+          (aset.status_reklame || "").toLowerCase() !==
+          appliedFilter.status_reklame.toLowerCase()
+        ) {
+          return false;
+        }
+
+        return true;
+      }),
+    [asetData, searchInput, appliedFilter]
+  );
+
+  const printFilters = useMemo<PrintFilterItem[]>(() => {
+    const items: PrintFilterItem[] = [];
+
+    const keyword = searchInput.trim();
+
+    if (keyword) {
+      items.push({
+        label: "Pencarian Nama Pemilik",
+        value: keyword,
+      });
+    }
+
+    (
+      Object.entries(appliedFilter) as [
+        keyof FilterState,
+        string
+      ][]
+    ).forEach(([key, value]) => {
+      if (value) {
+        items.push({
+          label: FILTER_LABELS[key],
+          value,
+        });
+      }
+    });
+
+    return items;
+  }, [searchInput, appliedFilter]);
+
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+
+    documentTitle: `Laporan_Data_Reklame_${new Date()
+      .toISOString()
+      .slice(0, 10)}`,
+
+    onBeforePrint: async () => {
+      setPrintGeneratedAt(new Date());
+
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve())
+      );
+    },
+
+    pageStyle: `
+    @page {
+      size: A4 landscape;
+      margin: 10mm 8mm 12mm;
+    }
+
+    html,
+    body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #ffffff !important;
+    }
+
+    * {
+      box-sizing: border-box;
+
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+  `,
   });
 
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
@@ -177,9 +320,68 @@ export default function Page() {
               <input placeholder="Cari Berdasarkan Nama Pemilik" style={styles.input} value={searchInput} onChange={(e) => handleSearchChange(e.target.value)} />
               <button type="button" style={styles.btnSecondary} onClick={handleResetSearch}>Reset</button>
               <button type="button" style={styles.btnPrimary} onClick={() => router.push('/manajemen_reklame/create')}>+ Tambah Reklame</button>
+              <button
+                type="button"
+                style={{
+                  ...styles.btnPrimaryPDF,
+
+                  opacity:
+                    loading || filtered.length === 0
+                      ? 0.55
+                      : 1,
+
+                  cursor:
+                    loading || filtered.length === 0
+                      ? "not-allowed"
+                      : "pointer",
+                }}
+                onClick={() => handlePrint()}
+                disabled={loading || filtered.length === 0}
+                title="Buka print preview untuk mencetak atau menyimpan sebagai PDF"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <polyline points="6 9 6 2 18 2 18 9" />
+
+                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+
+                  <rect
+                    x="6"
+                    y="14"
+                    width="12"
+                    height="8"
+                  />
+                </svg>
+
+                 Export ke PDF
+              </button>
             </div>
           </div>
-
+{/* Konten khusus yang akan dicetak */}
+<div
+  aria-hidden="true"
+  style={{
+    position: "fixed",
+    left: "-100000px",
+    top: 0,
+    width: "297mm",
+    pointerEvents: "none",
+  }}
+>
+  <div ref={printRef}>
+    <ReklamePrintReport
+      data={filtered}
+      filters={printFilters}
+      generatedAt={printGeneratedAt}
+    />
+  </div>
+</div>
           <div style={styles.filterBox}>
             <div style={{ marginBottom: 10, fontWeight: 600 }}>
               Filter Data
@@ -229,57 +431,57 @@ export default function Page() {
 
           {loading ? <div style={styles.loading}>⏳ Memuat data dari server...</div>
             : error ? <div style={styles.error}>⚠️ {error}</div>
-            : (
-              <div style={styles.tableWrap}>
-                <table style={styles.table}>
-                  <thead>
-                    <tr>
-                      <th style={styles.th}><input type="checkbox" onChange={toggleAll} checked={checkedAll} /></th>
-                      <th style={styles.th}>Kode Reklame</th>
-                      <th style={styles.th}>Nama Pemilik</th>
-                      <th style={styles.th}>NIK/NPWP</th>
-                      <th style={styles.th}>Kabupaten/Kota</th>
-                      <th style={styles.th}>Pengguna</th>
-                      <th style={styles.th}>Kuasa Pengguna</th>
-                      <th style={styles.th}>Tipe Zona</th>
-                      <th style={styles.th}>Koordinat</th>
-                      <th style={styles.th}>Luas (m²)</th>
-                      <th style={styles.th}>Tinggi (m)</th>
-                      <th style={styles.th}>Status</th>
-                      <th style={styles.th}>Tanggal Pasang</th>
-                      <th style={styles.th}>Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginated.length === 0 ? (
-                      <tr><td colSpan={14} style={{ ...styles.td, ...styles.empty }}>Tidak ada data ditemukan.</td></tr>
-                    ) : paginated.map((row) => (
-                      <tr key={row.kode_reklame}>
-                        <td style={styles.td}><input type="checkbox" checked={!!checked[row.kode_reklame]} onChange={() => toggleOne(row.kode_reklame)} /></td>
-                        <td style={styles.td}>{row.kode_reklame}</td>
-                        <td style={styles.td}>{row.nama_pemilik}</td>
-                        <td style={styles.td}>{row.nik_npwp || "-"}</td>
-                        <td style={styles.td}>{row.kabupaten_kota || "-"}</td>
-                        <td style={styles.td}>{row.pengguna || "-"}</td>
-                        <td style={styles.td}>{row.kuasa_pengguna || "-"}</td>
-                        <td style={styles.td}>{row.tipe_zona || "-"}</td>
-                        <td style={styles.td}>{row.latitude}, {row.longitude}</td>
-                        <td style={styles.td}>{row.luas_m2 || "-"}</td>
-                        <td style={styles.td}>{row.tinggi_m || "-"}</td>
-                        <td style={styles.td}><span style={getStatusStyle(row.status_reklame)}>{row.status_reklame || "-"}</span></td>
-                        <td style={styles.td}>{row.tanggal_pasang || "-"}</td>
-                        <td style={styles.td}>
-                          <div style={{ display: "flex", gap: 8 }}>
-                            <button type="button" style={styles.pageBtn} onClick={() => router.push(`/manajemen_reklame/detail/${encodeURIComponent(row.kode_reklame)}`)}>Detail</button>
-                            <button type="button" style={styles.btnPrimary} onClick={() => router.push(`/manajemen_reklame/edit/${encodeURIComponent(row.kode_reklame)}`)}>Edit</button>
-                          </div>
-                        </td>
+              : (
+                <div style={styles.tableWrap}>
+                  <table style={styles.table}>
+                    <thead>
+                      <tr>
+                        <th style={styles.th}><input type="checkbox" onChange={toggleAll} checked={checkedAll} /></th>
+                        <th style={styles.th}>Kode Reklame</th>
+                        <th style={styles.th}>Nama Pemilik</th>
+                        <th style={styles.th}>NIK/NPWP</th>
+                        <th style={styles.th}>Kabupaten/Kota</th>
+                        <th style={styles.th}>Pengguna</th>
+                        <th style={styles.th}>Kuasa Pengguna</th>
+                        <th style={styles.th}>Tipe Zona</th>
+                        <th style={styles.th}>Koordinat</th>
+                        <th style={styles.th}>Luas (m²)</th>
+                        <th style={styles.th}>Tinggi (m)</th>
+                        <th style={styles.th}>Status</th>
+                        <th style={styles.th}>Tanggal Pasang</th>
+                        <th style={styles.th}>Aksi</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                    </thead>
+                    <tbody>
+                      {paginated.length === 0 ? (
+                        <tr><td colSpan={14} style={{ ...styles.td, ...styles.empty }}>Tidak ada data ditemukan.</td></tr>
+                      ) : paginated.map((row) => (
+                        <tr key={row.kode_reklame}>
+                          <td style={styles.td}><input type="checkbox" checked={!!checked[row.kode_reklame]} onChange={() => toggleOne(row.kode_reklame)} /></td>
+                          <td style={styles.td}>{row.kode_reklame}</td>
+                          <td style={styles.td}>{row.nama_pemilik}</td>
+                          <td style={styles.td}>{row.nik_npwp || "-"}</td>
+                          <td style={styles.td}>{row.kabupaten_kota || "-"}</td>
+                          <td style={styles.td}>{row.pengguna || "-"}</td>
+                          <td style={styles.td}>{row.kuasa_pengguna || "-"}</td>
+                          <td style={styles.td}>{row.tipe_zona || "-"}</td>
+                          <td style={styles.td}>{row.latitude}, {row.longitude}</td>
+                          <td style={styles.td}>{row.luas_m2 || "-"}</td>
+                          <td style={styles.td}>{row.tinggi_m || "-"}</td>
+                          <td style={styles.td}><span style={getStatusStyle(row.status_reklame)}>{row.status_reklame || "-"}</span></td>
+                          <td style={styles.td}>{row.tanggal_pasang || "-"}</td>
+                          <td style={styles.td}>
+                            <div style={{ display: "flex", gap: 8 }}>
+                              <button type="button" style={styles.pageBtn} onClick={() => router.push(`/manajemen_reklame/detail/${encodeURIComponent(row.kode_reklame)}`)}>Detail</button>
+                              <button type="button" style={styles.btnPrimary} onClick={() => router.push(`/manajemen_reklame/edit/${encodeURIComponent(row.kode_reklame)}`)}>Edit</button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
 
           {!loading && !error && filtered.length > 0 && (
             <div style={styles.pagination}>
