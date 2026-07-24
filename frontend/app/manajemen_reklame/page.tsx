@@ -45,6 +45,8 @@ type FilterState = {
   tipe_zona: string;
   kategori: string;
   status_reklame: string;
+  bulan: string;
+  tahun: string;
 };
 
 const EMPTY_FILTER: FilterState = {
@@ -54,6 +56,8 @@ const EMPTY_FILTER: FilterState = {
   tipe_zona: "",
   kategori: "",
   status_reklame: "",
+  bulan: "",
+  tahun: "",
 };
 
 const FILTER_LABELS: Record<keyof FilterState, string> = {
@@ -63,7 +67,52 @@ const FILTER_LABELS: Record<keyof FilterState, string> = {
   tipe_zona: "Tipe Zona",
   kategori: "Kategori",
   status_reklame: "Status Reklame",
+  bulan: "Bulan Pemasangan",
+  tahun: "Tahun Pemasangan",
 };
+
+const MONTH_OPTIONS = [
+  { value: "01", label: "Januari" },
+  { value: "02", label: "Februari" },
+  { value: "03", label: "Maret" },
+  { value: "04", label: "April" },
+  { value: "05", label: "Mei" },
+  { value: "06", label: "Juni" },
+  { value: "07", label: "Juli" },
+  { value: "08", label: "Agustus" },
+  { value: "09", label: "September" },
+  { value: "10", label: "Oktober" },
+  { value: "11", label: "November" },
+  { value: "12", label: "Desember" },
+];
+
+function getTanggalPasangParts(
+  value: string | null | undefined
+) {
+  if (!value) return null;
+
+  // Mendukung format YYYY-MM-DD dan format ISO.
+  const match = value.match(/^(\d{4})-(\d{2})/);
+
+  if (match) {
+    return {
+      year: match[1],
+      month: match[2],
+    };
+  }
+
+  // Cadangan apabila API mengirim format tanggal berbeda.
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return {
+    year: String(date.getFullYear()),
+    month: String(date.getMonth() + 1).padStart(2, "0"),
+  };
+}
 
 const styles: { [key: string]: React.CSSProperties } = {
   page: { background: "rgba(251, 251, 250, 1)", padding: 24, fontFamily: "sans-serif" },
@@ -159,16 +208,31 @@ export default function Page() {
   const handleCari = () => { setAppliedFilter({ ...pendingFilter }); setPage(1); setChecked({}); setCheckedAll(false); };
   const handleResetFilter = () => { setPendingFilter(EMPTY_FILTER); setAppliedFilter(EMPTY_FILTER); setPage(1); setChecked({}); setCheckedAll(false); };
 
+  const yearOptions = useMemo(() => {
+    const years = asetData
+      .map(
+        (aset) =>
+          getTanggalPasangParts(aset.tanggal_pasang)?.year
+      )
+      .filter(
+        (year): year is string => Boolean(year)
+      );
+
+    return Array.from(new Set(years)).sort(
+      (a, b) => Number(b) - Number(a)
+    );
+  }, [asetData]);
+
   const filtered = useMemo(
     () =>
       asetData.filter((aset) => {
-        const keyword = searchInput.trim().toLowerCase();
+        const kw = searchInput.trim().toLowerCase();
 
         if (
-          keyword &&
+          kw &&
           !(aset.nama_pemilik || "")
             .toLowerCase()
-            .includes(keyword)
+            .includes(kw)
         ) {
           return false;
         }
@@ -221,6 +285,24 @@ export default function Page() {
           return false;
         }
 
+        const tanggalParts = getTanggalPasangParts(
+          aset.tanggal_pasang
+        );
+
+        if (
+          appliedFilter.bulan &&
+          tanggalParts?.month !== appliedFilter.bulan
+        ) {
+          return false;
+        }
+
+        if (
+          appliedFilter.tahun &&
+          tanggalParts?.year !== appliedFilter.tahun
+        ) {
+          return false;
+        }
+
         return true;
       }),
     [asetData, searchInput, appliedFilter]
@@ -228,7 +310,6 @@ export default function Page() {
 
   const printFilters = useMemo<PrintFilterItem[]>(() => {
     const items: PrintFilterItem[] = [];
-
     const keyword = searchInput.trim();
 
     if (keyword) {
@@ -244,12 +325,19 @@ export default function Page() {
         string
       ][]
     ).forEach(([key, value]) => {
-      if (value) {
-        items.push({
-          label: FILTER_LABELS[key],
-          value,
-        });
-      }
+      if (!value) return;
+
+      const displayValue =
+        key === "bulan"
+          ? MONTH_OPTIONS.find(
+            (month) => month.value === value
+          )?.label || value
+          : value;
+
+      items.push({
+        label: FILTER_LABELS[key],
+        value: displayValue,
+      });
     });
 
     return items;
@@ -359,29 +447,29 @@ export default function Page() {
                   />
                 </svg>
 
-                 Export ke PDF
+                Export ke PDF
               </button>
             </div>
           </div>
-{/* Konten khusus yang akan dicetak */}
-<div
-  aria-hidden="true"
-  style={{
-    position: "fixed",
-    left: "-100000px",
-    top: 0,
-    width: "297mm",
-    pointerEvents: "none",
-  }}
->
-  <div ref={printRef}>
-    <ReklamePrintReport
-      data={filtered}
-      filters={printFilters}
-      generatedAt={printGeneratedAt}
-    />
-  </div>
-</div>
+          {/* Konten khusus yang akan dicetak */}
+          <div
+            aria-hidden="true"
+            style={{
+              position: "fixed",
+              left: "-100000px",
+              top: 0,
+              width: "297mm",
+              pointerEvents: "none",
+            }}
+          >
+            <div ref={printRef}>
+              <ReklamePrintReport
+                data={filtered}
+                filters={printFilters}
+                generatedAt={printGeneratedAt}
+              />
+            </div>
+          </div>
           <div style={styles.filterBox}>
             <div style={{ marginBottom: 10, fontWeight: 600 }}>
               Filter Data
@@ -412,17 +500,99 @@ export default function Page() {
                 <option value="">Pilih Status Reklame</option>
                 {filterOptions.status_reklame.map((o) => <option key={o} value={o}>{o}</option>)}
               </select>
+              <select
+                style={styles.select}
+                value={pendingFilter.bulan}
+                onChange={(e) =>
+                  handleFilterChange("bulan", e.target.value)
+                }
+              >
+                <option value="">Pilih Bulan Pemasangan</option>
+
+                {MONTH_OPTIONS.map((month) => (
+                  <option
+                    key={month.value}
+                    value={month.value}
+                  >
+                    {month.label}
+                  </option>
+                ))}
+              </select>
+              <select
+                style={styles.select}
+                value={pendingFilter.tahun}
+                onChange={(e) =>
+                  handleFilterChange("tahun", e.target.value)
+                }
+              >
+                <option value="">Pilih Tahun Pemasangan</option>
+
+                {yearOptions.map((year) => (
+                  <option
+                    key={year}
+                    value={year}
+                  >
+                    {year}
+                  </option>
+                ))}
+              </select>
               <button type="button" style={styles.btnPrimary} onClick={handleCari}>Cari</button>
               <button type="button" style={styles.pageBtn} onClick={handleResetFilter}>Reset</button>
             </div>
+            {/* TAMPILAN FILTER YANG SEDANG AKTIF */}
             {activeFilterCount > 0 && (
               <div style={{ marginTop: 6 }}>
-                {appliedFilter.kabupaten_kota && <span style={styles.activeBadge}>Kab/Kota: {appliedFilter.kabupaten_kota}</span>}
-                {appliedFilter.pengguna && <span style={styles.activeBadge}>Pengguna: {appliedFilter.pengguna}</span>}
-                {appliedFilter.kuasa_pengguna && <span style={styles.activeBadge}>Kuasa: {appliedFilter.kuasa_pengguna}</span>}
-                {appliedFilter.tipe_zona && <span style={styles.activeBadge}>Tipe Zona: {appliedFilter.tipe_zona}</span>}
-                {appliedFilter.kategori && <span style={styles.activeBadge}>Kategori: {appliedFilter.kategori}</span>}
-                {appliedFilter.status_reklame && <span style={styles.activeBadge}>Status: {appliedFilter.status_reklame}</span>}
+                {appliedFilter.kabupaten_kota && (
+                  <span style={styles.activeBadge}>
+                    Kab/Kota: {appliedFilter.kabupaten_kota}
+                  </span>
+                )}
+
+                {appliedFilter.pengguna && (
+                  <span style={styles.activeBadge}>
+                    Pengguna: {appliedFilter.pengguna}
+                  </span>
+                )}
+
+                {appliedFilter.kuasa_pengguna && (
+                  <span style={styles.activeBadge}>
+                    Kuasa: {appliedFilter.kuasa_pengguna}
+                  </span>
+                )}
+
+                {appliedFilter.tipe_zona && (
+                  <span style={styles.activeBadge}>
+                    Tipe Zona: {appliedFilter.tipe_zona}
+                  </span>
+                )}
+
+                {appliedFilter.kategori && (
+                  <span style={styles.activeBadge}>
+                    Kategori: {appliedFilter.kategori}
+                  </span>
+                )}
+
+                {appliedFilter.status_reklame && (
+                  <span style={styles.activeBadge}>
+                    Status: {appliedFilter.status_reklame}
+                  </span>
+                )}
+
+                {appliedFilter.bulan && (
+                  <span style={styles.activeBadge}>
+                    Bulan:{" "}
+                    {MONTH_OPTIONS.find(
+                      (month) =>
+                        month.value === appliedFilter.bulan
+                    )?.label}
+                  </span>
+                )}
+
+                {appliedFilter.tahun && (
+                  <span style={styles.activeBadge}>
+                    Tahun: {appliedFilter.tahun}
+                  </span>
+                )}
               </div>
             )}
           </div>
